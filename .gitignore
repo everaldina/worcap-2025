@@ -2,4 +2,5 @@
 *.tif
 # venv
 venv/
+.venv/
 __pycache__/
