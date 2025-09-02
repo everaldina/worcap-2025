@@ -18,7 +18,7 @@ class Unet_module(nn.Module):
                 nn.BatchNorm2d(channel_list[2]), nn.PReLU())
         else:
             self.sample = nn.Sequential(
-                nn.ConvTranspose3d(channel_list[2], channel_list[2], de_kernel_size, 2, (de_kernel_size - 1) // 2),
+                nn.ConvTranspose2d(channel_list[2], channel_list[2], de_kernel_size, 2, (de_kernel_size - 1) // 2),
                 nn.BatchNorm2d(channel_list[2]), nn.ReLU())
 
     def forward(self, x):
@@ -51,7 +51,7 @@ class de_conv_module(nn.Module):
                 nn.BatchNorm2d(channel_list[2]), nn.PReLU())
         else:
             self.sample = nn.Sequential(
-                nn.ConvTranspose3d(channel_list[2], channel_list[2], de_kernel_size, 2, (de_kernel_size - 1) // 2),
+                nn.ConvTranspose2d(channel_list[2], channel_list[2], de_kernel_size, 2, (de_kernel_size - 1) // 2),
                 nn.BatchNorm2d(channel_list[2]), nn.ReLU())
 
     def forward(self, x, x1):

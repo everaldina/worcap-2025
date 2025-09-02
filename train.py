@@ -17,6 +17,7 @@ def train(model, criterion, train_loader, opt, device, e):
     model.train()
     train_sum = 0
     for j, batch in enumerate(train_loader):
+        #print(batch[0].shape, batch[1].shape)
         img, label = batch[0].float(), batch[1].float()
         img, label = img.to(device), label.to(device)
         outputs = model(img)
@@ -48,13 +49,12 @@ def args_input():
     p = argparse.ArgumentParser(description='cmd parameters')
     p.add_argument('--gpu_index', type=int, default=0)
     p.add_argument('--load_num', type=int, default=0)
-    p.add_argument('--is_infer', action='store_true', default=True)
     p.add_argument('--batch_size', type=int, default=32)
     p.add_argument('--layers', type=int, default=8)
     p.add_argument('--pools', type=int, default=1)
     p.add_argument('--num_workers', type=int, default=8)
-    p.add_argument('--epochs',type=int, default=30)
-    p.add_argument('--channels', type=int, default=4)
+    p.add_argument('--epochs',type=int, default=100)
+    p.add_argument('--channels', type=int, default=8)
     p.add_argument('--rl', type=float, default=0.001)
     return p.parse_args()
 
@@ -67,7 +67,6 @@ if __name__ == '__main__':
     layers = args.layers
     pool_nums = args.pools
     num_workers = args.num_workers
-    is_train = not args.is_infer
     epochs=args.epochs
     result_path = os.path.abspath('.') + '/results'
     channels = args.channels
@@ -78,8 +77,26 @@ if __name__ == '__main__':
         'after': 'data/dataset/t2',
         'mask': 'data/dataset/mask'
     }
+    split_paths = 'split_ids.csv'
+    split_df = pd.read_csv(split_paths)
+    train_ids = split_df[split_df['split'] == 'train']['ID'].tolist()
+    val_ids = split_df[split_df['split'] == 'val']['ID'].tolist()
+    
+    # print args
+    print(f"gpu_index: {gpu_index}")
+    print(f"load_num: {load_num}")
+    print(f"batch_size: {batch_size}")
+    print(f"layers: {layers}")
+    print(f"pool_nums: {pool_nums}")
+    print(f"num_workers: {num_workers}")
+    print(f"epochs: {epochs}")
+    print(f"result_path: {result_path}")
+    print(f"channels: {channels}")
+    print(f"input_size: {input_size}")
+    print(f"learning_rate: {learning_rate}")
+    
 
-    model_save_path = os.path.join(result_path, f'FNC_2D_{channels}ch_{layers}lyr_{pool_nums}pls')
+    model_save_path = os.path.join(result_path, f'FCN_2D_{channels}ch_{layers}lyr_{pool_nums}pls')
     os.makedirs(model_save_path, exist_ok=True)
 
     os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu_index)
@@ -87,17 +104,11 @@ if __name__ == '__main__':
     torch.backends.cudnn.enabled = True
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    dataset = WorCapDataset(data_paths["before"], data_paths["after"], data_paths['mask'])
-    
-    loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers)
-    
-    dataset = loader.dataset
-    train_size = int(0.8 * len(dataset))
-    test_size = len(dataset) - train_size
-    train_dataset, test_dataset = random_split(dataset, [train_size, test_size])
+    dataset_train = WorCapDataset(data_paths["before"], data_paths["after"], data_paths['mask'], train_ids)
+    dataset_val = WorCapDataset(data_paths["before"], data_paths["after"], data_paths['mask'], val_ids)
 
-    train_loader = DataLoader(train_dataset, batch_size=loader.batch_size, shuffle=True)
-    test_loader = DataLoader(test_dataset, batch_size=loader.batch_size, shuffle=False)
+    train_loader = DataLoader(dataset_train, batch_size=batch_size, shuffle=True)
+    test_loader = DataLoader(dataset_val, batch_size=batch_size, shuffle=False)
 
     net = FCN_2D(channels, layers).to(device)
 

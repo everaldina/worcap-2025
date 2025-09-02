@@ -6,19 +6,20 @@ import rasterio
 
 
 class WorCapDataset(Dataset):
-    def __init__(self, T10_dir, T20_dir, mask_dir, transform=None):
+    def __init__(self, T10_dir, T20_dir, mask_dir, ids, transform=None):
         self.T10_dir = T10_dir
         self.T20_dir = T20_dir
         self.mask_dir = mask_dir
+        self.ids = ids
         self.transform = transform
-
-        self.ids = sorted([
-            f.split('_')[-1].replace('.tif', '')
-            for f in os.listdir(T10_dir)
-            if f.startswith('recorte_') and
-               os.path.isfile(os.path.join(T20_dir, f)) and
-               os.path.isfile(os.path.join(mask_dir, f))
-        ])
+        
+        #self.ids = sorted([
+        #    f.split('_')[-1].replace('.tif', '')
+        #    for f in os.listdir(T10_dir)
+        #    if f.startswith('recorte_') and
+        #       os.path.isfile(os.path.join(T20_dir, f)) and
+        #       os.path.isfile(os.path.join(mask_dir, f))
+        #])
 
     def __len__(self):
         return len(self.ids)
@@ -59,6 +60,4 @@ class WorCapDataset(Dataset):
             mask = self.transform(mask)
 
         T = torch.cat([t1, t2], dim=0)
-        
-        
-        return T, mask
+        return T, mask, id_
