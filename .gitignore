@@ -1,5 +1,5 @@
 # arquivos tif
-*.tif
+data/
 # venv
 venv/
 .venv/
