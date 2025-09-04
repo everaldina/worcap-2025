@@ -38,7 +38,6 @@ def args_input():
     p.add_argument('load_num', type=int)
     p.add_argument('--gpu_index', type=int, default=0)
     p.add_argument('--layers', type=int, default=8)
-    p.add_argument('--pools', type=int, default=1)
     p.add_argument('--num_workers', type=int, default=8)
     p.add_argument('--epochs',type=int, default=100)
     p.add_argument('--channels', type=int, default=8)
@@ -51,7 +50,6 @@ if __name__ == '__main__':
     gpu_index = args.gpu_index
     load_num = args.load_num
     layers = args.layers
-    pool_nums = args.pools
     num_workers = args.num_workers
     models_path = os.path.abspath('.') + '/results'
     channels = args.channels
@@ -72,14 +70,13 @@ if __name__ == '__main__':
     print(f"gpu_index: {gpu_index}")
     print(f"load_num: {load_num}")
     print(f"layers: {layers}")
-    print(f"pool_nums: {pool_nums}")
     print(f"num_workers: {num_workers}")
     print(f"models_path: {models_path}")
     print(f"channels: {channels}")
     print(f"input_size: {input_size}")
     
 
-    model_save_path = os.path.join(models_path, f'FCN_2D_{channels}ch_{layers}lyr_{pool_nums}pls')
+    model_save_path = os.path.join(models_path, f'FCN_2D_{channels}ch_{layers}lyr')
     os.makedirs(model_save_path, exist_ok=True)
     
     infer_path = os.path.join(model_save_path, 'infer')
