@@ -51,7 +51,6 @@ def args_input():
     p.add_argument('--load_num', type=int, default=0)
     p.add_argument('--batch_size', type=int, default=32)
     p.add_argument('--layers', type=int, default=8)
-    p.add_argument('--pools', type=int, default=1)
     p.add_argument('--num_workers', type=int, default=8)
     p.add_argument('--epochs',type=int, default=100)
     p.add_argument('--channels', type=int, default=8)
@@ -65,7 +64,6 @@ if __name__ == '__main__':
     load_num = args.load_num
     batch_size = args.batch_size
     layers = args.layers
-    pool_nums = args.pools
     num_workers = args.num_workers
     epochs=args.epochs
     result_path = os.path.abspath('.') + '/results'
@@ -87,7 +85,6 @@ if __name__ == '__main__':
     print(f"load_num: {load_num}")
     print(f"batch_size: {batch_size}")
     print(f"layers: {layers}")
-    print(f"pool_nums: {pool_nums}")
     print(f"num_workers: {num_workers}")
     print(f"epochs: {epochs}")
     print(f"result_path: {result_path}")
@@ -96,7 +93,7 @@ if __name__ == '__main__':
     print(f"learning_rate: {learning_rate}")
     
 
-    model_save_path = os.path.join(result_path, f'FCN_2D_{channels}ch_{layers}lyr_{pool_nums}pls')
+    model_save_path = os.path.join(result_path, f'FCN_2D_{channels}ch_{layers}lyr')
     os.makedirs(model_save_path, exist_ok=True)
 
     os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu_index)
