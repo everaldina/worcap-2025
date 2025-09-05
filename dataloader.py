@@ -3,8 +3,65 @@ import numpy as np
 import os
 import torch
 import rasterio
+import spyndex
 
+class WorCapDiffDataset(Dataset):
+    def __init__(self, T10_dir, T20_dir, mask_dir, ids, transform=None):
+        self.T10_dir = T10_dir
+        self.T20_dir = T20_dir
+        self.mask_dir = mask_dir
+        self.ids = ids
+        self.transform = transform
 
+    def __len__(self):
+        return len(self.ids)
+
+    def read_image(self, path):
+        with rasterio.open(path) as src:
+            S1 = src.read(3).astype(np.float32)
+            S2 = src.read(4).astype(np.float32)
+            
+        idx = spyndex.computeIndex(
+            index=["NBRSWIR"],
+            params={
+                "S1": S1,
+                "S2": S2
+            }
+        )
+        
+        return idx
+
+    def read_mask(self, path):
+        with rasterio.open(path) as src:
+            mask = src.read(1).astype(np.float32)
+            mask = np.nan_to_num(mask, nan=0.0)
+            mask = np.where(mask > 0, 1.0, 0.0)
+        return torch.tensor(mask, dtype=torch.float32).unsqueeze(0)
+    
+
+    def __getitem__(self, idx):
+        id_ = self.ids[idx]
+        fname = f"recorte_{id_}.tif"
+        T10_path = os.path.join(self.T10_dir, fname)
+        T20_path = os.path.join(self.T20_dir, fname)
+        mask_path = os.path.join(self.mask_dir, fname)
+
+        t1 = self.read_image(T10_path)
+        t2 = self.read_image(T20_path)
+        
+        idx = t1 - t2 
+        idx = np.expand_dims(idx, axis=0)
+
+        mask = self.read_mask(mask_path)
+
+        if self.transform:
+            idx = self.transform(torch.tensor(idx, dtype=torch.float32))
+            mask = self.transform(mask)
+
+        T = torch.tensor(idx, dtype=torch.float32)
+        return T, mask, id_
+    
+    
 class WorCapDataset(Dataset):
     def __init__(self, T10_dir, T20_dir, mask_dir, ids, transform=None):
         self.T10_dir = T10_dir

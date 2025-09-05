@@ -9,7 +9,7 @@ import torch.nn as nn
 import time
 from FCN_2D import FCN_2D
 import pandas as pd
-from dataloader import WorCapDataset
+from dataloader import WorCapDataset, WorCapDiffDataset
 
 
 def train(model, criterion, train_loader, opt, device, e):
@@ -101,8 +101,14 @@ if __name__ == '__main__':
     torch.backends.cudnn.enabled = True
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    dataset_train = WorCapDataset(data_paths["before"], data_paths["after"], data_paths['mask'], train_ids)
-    dataset_val = WorCapDataset(data_paths["before"], data_paths["after"], data_paths['mask'], val_ids)
+
+
+    if channels == 8:
+        dataset_train = WorCapDataset(data_paths["before"], data_paths["after"], data_paths['mask'], train_ids)
+        dataset_val = WorCapDataset(data_paths["before"], data_paths["after"], data_paths['mask'], val_ids)
+    elif channels == 1:
+        dataset_train = WorCapDiffDataset(data_paths["before"], data_paths["after"], data_paths['mask'], train_ids)
+        dataset_val = WorCapDiffDataset(data_paths["before"], data_paths["after"], data_paths['mask'], val_ids)
 
     train_loader = DataLoader(dataset_train, batch_size=batch_size, shuffle=True)
     test_loader = DataLoader(dataset_val, batch_size=batch_size, shuffle=False)

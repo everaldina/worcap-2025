@@ -9,7 +9,7 @@ import torch.nn as nn
 import time
 from FCN_2D import FCN_2D
 import pandas as pd
-from dataloader import WorCapDataset
+from dataloader import WorCapDataset, WorCapDiffDataset
 import pickle
 
 
@@ -86,8 +86,11 @@ if __name__ == '__main__':
     torch.cuda.set_device(0)
     torch.backends.cudnn.enabled = True
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-    dataset_val = WorCapDataset(data_paths["before"], data_paths["after"], data_paths['mask'], val_ids)
+    
+    if channels == 8:
+        dataset_val = WorCapDataset(data_paths["before"], data_paths["after"], data_paths['mask'], val_ids)
+    elif channels == 1:
+        dataset_val = WorCapDiffDataset(data_paths["before"], data_paths["after"], data_paths['mask'], val_ids)
     test_loader = DataLoader(dataset_val, batch_size=1, shuffle=False)
 
     net = FCN_2D(channels, layers).to(device)
