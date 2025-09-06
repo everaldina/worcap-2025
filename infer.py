@@ -82,10 +82,17 @@ if __name__ == '__main__':
     infer_path = os.path.join(model_save_path, 'infer')
     os.makedirs(infer_path, exist_ok=True)
 
-    os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu_index)
-    torch.cuda.set_device(0)
-    torch.backends.cudnn.enabled = True
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if torch.cuda.is_available():
+        os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu_index)
+        torch.cuda.set_device(0)
+        torch.backends.cudnn.enabled = True
+        device = torch.device("cuda")
+        map_location=None
+        print("Using CUDA GPU.")
+    else:
+        device = torch.device("cpu")
+        map_location=device
+        print("CUDA not available. Using CPU.")
     
     if channels == 8:
         dataset_val = WorCapDataset(data_paths["before"], data_paths["after"], data_paths['mask'], val_ids)
@@ -94,7 +101,8 @@ if __name__ == '__main__':
     test_loader = DataLoader(dataset_val, batch_size=1, shuffle=False)
 
     net = FCN_2D(channels, layers).to(device)
-    net.load_state_dict(torch.load(model_save_path + '/net_%d.pkl' % load_num))
+
+    net.load_state_dict(torch.load(model_save_path + '/net_%d.pkl' % load_num, map_location=map_location))
 
     
     inference(net, test_loader, device, infer_path)
